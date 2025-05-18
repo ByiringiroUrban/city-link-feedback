@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -29,7 +29,6 @@ const AdminLogin = () => {
   const { toast } = useToast();
   const { login } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [konamiComplete, setKonamiComplete] = useState(false);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -39,29 +38,28 @@ const AdminLogin = () => {
     },
   });
 
-  useEffect(() => {
-    // Apply a slight animation to the title when the page loads
-    // This is just to make the "secret" admin page feel special
-    const title = document.querySelector("h1");
-    if (title) {
-      title.classList.add("animate-pulse-slow");
-    }
-  }, []);
-
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     
     try {
       // Check specifically for admin credentials
       if (values.email === "admin@gov.example" && values.password === "admin123") {
-        await login(values.email, values.password);
+        const user = await login(values.email, values.password);
         
-        toast({
-          title: "Admin Login Successful",
-          description: "Welcome to the admin dashboard.",
-        });
-        
-        navigate("/admin/dashboard");
+        if (user.role === "admin") {
+          toast({
+            title: "Admin Login Successful",
+            description: "Welcome to the admin dashboard.",
+          });
+          
+          navigate("/admin/dashboard");
+        } else {
+          toast({
+            title: "Access Denied",
+            description: "Your account does not have admin privileges.",
+            variant: "destructive",
+          });
+        }
       } else {
         toast({
           title: "Admin Login Failed",
@@ -91,11 +89,6 @@ const AdminLogin = () => {
             <p className="text-gray-600">
               Login to manage and respond to citizen complaints.
             </p>
-            {konamiComplete && (
-              <div className="mt-4 text-sm bg-green-100 text-green-800 p-2 rounded-md">
-                Admin access granted via Konami code!
-              </div>
-            )}
           </div>
           
           <div className="bg-white rounded-lg shadow-sm p-8 animate-fade-in" style={{animationDelay: "0.2s"}}>
@@ -149,7 +142,6 @@ const AdminLogin = () => {
             
             <div className="mt-4 text-center text-sm text-gray-500">
               <p>For demo purposes: Use <strong>admin@gov.example</strong> and password <strong>admin123</strong></p>
-              <p className="mt-2 text-xs">Or use the Konami code: ↑↑↓↓←→←→BA</p>
             </div>
           </div>
           

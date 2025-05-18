@@ -55,8 +55,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // For demo purposes only - in a real app, use proper authentication
       let foundUser;
       
-      // Check against demo users
+      // Check against demo users first (admin)
       if (email === "admin@gov.example" && password === "admin123") {
+        foundUser = demoUsers.find(u => u.email === email);
+      } else if (email === "jane@example.com" && password === "password123") {
+        // Check against the demo citizen user
         foundUser = demoUsers.find(u => u.email === email);
       } else {
         // Check against registered users in localStorage
@@ -68,6 +71,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       if (foundUser) {
         setUser(foundUser);
+        
+        // Remove old admin state properties
+        if (foundUser.role === "admin") {
+          localStorage.removeItem("adminLoggedIn");
+        }
+        
         toast({
           title: "Login Successful",
           description: `Welcome back, ${foundUser.name}!`,
@@ -98,7 +107,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // Check if user already exists
       const registeredUsers = JSON.parse(localStorage.getItem("registeredUsers") || "[]");
       
-      if (email === "admin@gov.example" || registeredUsers.some((u: User) => u.email === email)) {
+      if (email === "admin@gov.example" || email === "jane@example.com" || 
+          registeredUsers.some((u: User) => u.email === email)) {
         throw new Error("User with this email already exists");
       }
       

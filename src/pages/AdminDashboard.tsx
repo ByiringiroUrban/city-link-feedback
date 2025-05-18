@@ -7,6 +7,7 @@ import ComplaintCard from "@/components/ComplaintCard";
 import { useComplaints } from "@/context/ComplaintsContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/context/AuthContext";
 import {
   Select,
   SelectContent,
@@ -23,10 +24,7 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const { complaints, categories, departments } = useComplaints();
   const { toast } = useToast();
-  
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [adminName, setAdminName] = useState("");
-  const [adminDepartment, setAdminDepartment] = useState("");
+  const { user, logout } = useAuth();
   
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
@@ -34,24 +32,6 @@ const AdminDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   
   const [filteredComplaints, setFilteredComplaints] = useState<Complaint[]>(complaints);
-  
-  // Check admin authentication
-  useEffect(() => {
-    const adminLoggedIn = localStorage.getItem("adminLoggedIn");
-    
-    if (adminLoggedIn !== "true") {
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to access the admin dashboard.",
-      });
-      navigate("/admin");
-      return;
-    }
-    
-    setIsAdmin(true);
-    setAdminName(localStorage.getItem("adminName") || "Admin User");
-    setAdminDepartment(localStorage.getItem("adminDepartment") || "");
-  }, [navigate, toast]);
   
   // Filter complaints
   useEffect(() => {
@@ -101,25 +81,9 @@ const AdminDashboard = () => {
   const resolvedComplaints = complaints.filter(c => c.status === "resolved").length;
   
   const handleLogout = () => {
-    localStorage.removeItem("adminLoggedIn");
-    localStorage.removeItem("adminName");
-    localStorage.removeItem("adminDepartment");
+    logout();
     navigate("/admin");
   };
-  
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-grow container mx-auto px-4 py-12">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold mb-4">Loading...</h1>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -131,7 +95,7 @@ const AdminDashboard = () => {
             <div>
               <h1 className="text-3xl font-bold text-ces-primary">Admin Dashboard</h1>
               <p className="text-gray-600">
-                Welcome, {adminName} {adminDepartment ? `(${adminDepartment})` : ""}
+                Welcome, {user?.name} {user?.department ? `(${user.department})` : ""}
               </p>
             </div>
             

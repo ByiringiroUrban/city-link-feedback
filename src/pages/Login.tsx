@@ -45,8 +45,14 @@ const Login = () => {
     setIsSubmitting(true);
     
     try {
-      await login(values.email, values.password);
-      navigate(from, { replace: true });
+      const user = await login(values.email, values.password);
+      
+      // Redirect based on user role
+      if (user.role === "admin") {
+        navigate("/admin/dashboard", { replace: true });
+      } else {
+        navigate(from, { replace: true });
+      }
     } catch (error) {
       // Error is handled in the login function
       console.error("Login error:", error);
