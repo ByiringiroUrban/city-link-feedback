@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { Complaint, ComplaintsContextType, Response } from "@/types/complaint";
+import { toast } from "@/hooks/use-toast";
 
 // Sample initial data
 const initialComplaints: Complaint[] = [
@@ -123,6 +124,13 @@ export const ComplaintsProvider = ({ children }: { children: React.ReactNode }) 
     };
 
     setComplaints((prevComplaints) => [...prevComplaints, newComplaint]);
+    
+    // Show a toast notification when complaint is added
+    toast({
+      title: "Complaint Registered",
+      description: "Your complaint has been successfully recorded in our system."
+    });
+    
     return newComplaint;
   };
 
@@ -138,6 +146,7 @@ export const ComplaintsProvider = ({ children }: { children: React.ReactNode }) 
           : complaint
       )
     );
+    return getComplaintById(id);
   };
 
   const addResponse = (complaintId: string, responseData: Omit<Response, "id" | "createdAt">) => {
@@ -160,6 +169,8 @@ export const ComplaintsProvider = ({ children }: { children: React.ReactNode }) 
           : complaint
       )
     );
+    
+    return newResponse;
   };
 
   const getComplaintById = (id: string) => {

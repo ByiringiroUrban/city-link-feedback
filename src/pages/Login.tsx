@@ -1,9 +1,9 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -20,16 +20,18 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
 
 const formSchema = z.object({
-  email: z.string().email("Please enter a valid government email address"),
+  email: z.string().email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
-const AdminLogin = () => {
+const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const { login } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [konamiComplete, setKonamiComplete] = useState(false);
+  
+  const from = location.state?.from || "/dashboard";
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -39,42 +41,15 @@ const AdminLogin = () => {
     },
   });
 
-  useEffect(() => {
-    // Apply a slight animation to the title when the page loads
-    // This is just to make the "secret" admin page feel special
-    const title = document.querySelector("h1");
-    if (title) {
-      title.classList.add("animate-pulse-slow");
-    }
-  }, []);
-
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     
     try {
-      // Check specifically for admin credentials
-      if (values.email === "admin@gov.example" && values.password === "admin123") {
-        await login(values.email, values.password);
-        
-        toast({
-          title: "Admin Login Successful",
-          description: "Welcome to the admin dashboard.",
-        });
-        
-        navigate("/admin/dashboard");
-      } else {
-        toast({
-          title: "Admin Login Failed",
-          description: "Invalid admin credentials. (Hint: Use admin@gov.example / admin123)",
-          variant: "destructive",
-        });
-      }
+      await login(values.email, values.password);
+      navigate(from, { replace: true });
     } catch (error) {
-      toast({
-        title: "Login Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      });
+      // Error is handled in the login function
+      console.error("Login error:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -84,21 +59,16 @@ const AdminLogin = () => {
     <div className="min-h-screen flex flex-col">
       <Header />
       
-      <main className="flex-grow py-12">
+      <main className="flex-grow py-12 bg-gray-50">
         <div className="max-w-md mx-auto px-4">
           <div className="text-center mb-8 animate-fade-in">
-            <h1 className="text-2xl font-bold text-ces-primary mb-2">Government Admin Portal</h1>
+            <h1 className="text-2xl font-bold text-ces-primary mb-2">Welcome Back</h1>
             <p className="text-gray-600">
-              Login to manage and respond to citizen complaints.
+              Log in to track your complaints and get updates.
             </p>
-            {konamiComplete && (
-              <div className="mt-4 text-sm bg-green-100 text-green-800 p-2 rounded-md">
-                Admin access granted via Konami code!
-              </div>
-            )}
           </div>
           
-          <div className="bg-white rounded-lg shadow-sm p-8 animate-fade-in" style={{animationDelay: "0.2s"}}>
+          <div className="bg-white rounded-lg shadow-sm p-8 animate-fade-in">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <FormField
@@ -109,7 +79,7 @@ const AdminLogin = () => {
                       <FormLabel>Email</FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="your.name@gov.example" 
+                          placeholder="your.email@example.com" 
                           type="email" 
                           {...field} 
                         />
@@ -147,15 +117,15 @@ const AdminLogin = () => {
               </form>
             </Form>
             
-            <div className="mt-4 text-center text-sm text-gray-500">
-              <p>For demo purposes: Use <strong>admin@gov.example</strong> and password <strong>admin123</strong></p>
-              <p className="mt-2 text-xs">Or use the Konami code: ↑↑↓↓←→←→BA</p>
+            <div className="mt-6 text-center text-sm text-gray-500">
+              <p>Don't have an account yet? <Link to="/register" className="text-ces-primary hover:underline">Register now</Link></p>
+              <p className="mt-2">For demo purposes: Use <strong>jane@example.com</strong> and password <strong>password123</strong></p>
             </div>
           </div>
           
           <div className="mt-6 text-center">
             <Link to="/" className="text-ces-secondary hover:underline">
-              Return to Citizen Portal
+              Return to Home
             </Link>
           </div>
         </div>
@@ -166,4 +136,4 @@ const AdminLogin = () => {
   );
 };
 
-export default AdminLogin;
+export default Login;
