@@ -33,7 +33,7 @@ export interface ComplaintsState {
 }
 
 export interface ComplaintsContextType extends ComplaintsState {
-  addComplaint: (complaint: Omit<Complaint, "id" | "status" | "createdAt" | "updatedAt">) => void;
+  addComplaint: (complaint: Omit<Complaint, "id" | "status" | "createdAt" | "updatedAt">) => Complaint;
   updateComplaint: (id: string, updates: Partial<Complaint>) => void;
   addResponse: (complaintId: string, response: Omit<Response, "id" | "createdAt">) => void;
   getComplaintById: (id: string) => Complaint | undefined;

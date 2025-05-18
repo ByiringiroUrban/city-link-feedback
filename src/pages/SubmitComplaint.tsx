@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -83,16 +82,8 @@ const SubmitComplaint = () => {
         description: "Your complaint has been successfully submitted.",
       });
       
-      // Navigate to the complaint detail page using the ID from the returned complaint
-      if (newComplaint && newComplaint.id) {
-        navigate(`/complaints/${newComplaint.id}`);
-      } else {
-        toast({
-          title: "Navigation Error",
-          description: "Couldn't navigate to the complaint details.",
-          variant: "destructive",
-        });
-      }
+      // Navigate to the complaint detail page using the ID
+      navigate(`/complaints/${newComplaint.id}`);
     } catch (error) {
       toast({
         title: "Submission Failed",
