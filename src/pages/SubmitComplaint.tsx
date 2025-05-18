@@ -64,7 +64,7 @@ const SubmitComplaint = () => {
     setIsSubmitting(true);
     
     try {
-      // Fix: Ensure all required fields are present by adding the ! assertion
+      // Create the complaint data
       const complaintData: Omit<Complaint, "id" | "status" | "createdAt" | "updatedAt"> = {
         title: values.title,
         description: values.description,
@@ -75,7 +75,7 @@ const SubmitComplaint = () => {
         citizenPhone: values.citizenPhone,
       };
       
-      // Fix: Store the returned complaint from addComplaint
+      // Store the returned complaint from addComplaint
       const newComplaint = addComplaint(complaintData);
       
       toast({
@@ -83,8 +83,16 @@ const SubmitComplaint = () => {
         description: "Your complaint has been successfully submitted.",
       });
       
-      // Fix: Use the ID from the returned complaint
-      navigate(`/complaints/${newComplaint.id}`);
+      // Navigate to the complaint detail page using the ID from the returned complaint
+      if (newComplaint && newComplaint.id) {
+        navigate(`/complaints/${newComplaint.id}`);
+      } else {
+        toast({
+          title: "Navigation Error",
+          description: "Couldn't navigate to the complaint details.",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       toast({
         title: "Submission Failed",
