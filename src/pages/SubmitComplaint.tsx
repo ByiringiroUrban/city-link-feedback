@@ -1,16 +1,44 @@
 
+import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useComplaints } from "@/context/ComplaintsContext";
 import { ComplaintForm } from "@/components/complaints/ComplaintForm";
 import { useComplaintSubmission } from "@/hooks/useComplaintSubmission";
+import { toast } from "@/hooks/use-toast";
 
 const SubmitComplaint = () => {
-  const { categories } = useComplaints();
-  const { isSubmitting, submitComplaint } = useComplaintSubmission();
   const [searchParams] = useSearchParams();
   const preselectedCategory = searchParams.get("category") || "";
+  const { isSubmitting, submitComplaint } = useComplaintSubmission();
+  
+  // Store categories in local state
+  const [categories, setCategories] = useState<string[]>([]);
+  
+  // Try to get categories from context, but provide fallback
+  useEffect(() => {
+    try {
+      const { categories: contextCategories } = useComplaints();
+      if (contextCategories && contextCategories.length > 0) {
+        setCategories(contextCategories);
+      } else {
+        // Fallback categories if context fails
+        setCategories(["Roads & Infrastructure", "Water Supply", "Electricity", "Sanitation", "Public Safety", "Other"]);
+      }
+    } catch (error) {
+      console.error("Error accessing complaints context:", error);
+      // Use fallback categories
+      setCategories(["Roads & Infrastructure", "Water Supply", "Electricity", "Sanitation", "Public Safety", "Other"]);
+      
+      // Show error toast
+      toast({
+        title: "System Notice",
+        description: "Some features may be limited. Please try refreshing the page.",
+        variant: "destructive",
+      });
+    }
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col">
